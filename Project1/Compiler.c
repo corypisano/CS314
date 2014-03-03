@@ -190,7 +190,6 @@ static void read()
 {
 	/* YOUR CODE GOES HERE */
 	/* @ 2/27 - modified print() code */
-	printf("read() called.\n");
 	if (token != '?') {
 		ERROR("Expected read statement\n");
 		exit(EXIT_FAILURE);
@@ -207,7 +206,6 @@ static void read()
 
 static void print()  /* variables are handled explicitly without recursive call */
 {
-	printf("print() called.\n");
 	if (token != '!') {
 		ERROR("Expected print statement\n");
 		exit(EXIT_FAILURE);
@@ -226,14 +224,13 @@ static void stmt()
 	/* YOUR CODE GOES HERE */
 	/* @ 2/27 stmt() based off expr()*/
 	/* STMT ::= ASSIGN | READ | PRINT */
-	printf("stmt() called.\n");
 	if (is_identifier(token)) { 	// ASSIGN begins with variable
 		assign();
 	} 
-	else if (token == "?")) {  // read begins with ?
+	else if (token == '?') {  // read begins with ?
 		read();
 	} 
-	else if (token == "!")) {  // print begins with !
+	else if (token == '!') {  // print begins with !
 		print();
 	}
 	else {
@@ -246,7 +243,6 @@ static void morestmts()
 {
 	/* YOUR CODE GOES HERE */
 	/* @ 2/27 morestms only if token is ';' otherwise epsilon */
-	printf("morestmts() called.\n");
 	if (token == ';') {
 		next_token();
 		stmtlist();
@@ -260,7 +256,6 @@ static void stmtlist()
 {
 	/* YOUR CODE GOES HERE */
 	/* @ 2/27 guessing structure */
-	printf("stmtlist() called.\n");
 	stmt();
 	morestmts();
 }
@@ -268,7 +263,6 @@ static void stmtlist()
 static void program()
 {
 
-	printf("Program() called.\n");
 
 	/* YOUR CODE GOES HERE */
 	/* @ 2/27 program goes to stmtlist */
