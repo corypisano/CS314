@@ -264,6 +264,8 @@ static void stmtlist()
 static void program()
 {
 
+	fprintf('Program() called.\n');
+
 	/* YOUR CODE GOES HERE */
 	/* @ 2/27 program goes to stmtlist */
 	stmtlist();
