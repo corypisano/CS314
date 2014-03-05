@@ -16,6 +16,7 @@
  /* Routines for dead code optimization */
 static void markCriticals(Instruction *instr);
 static void	criticalStore(Instruction *instr);
+static void	criticalRegister(Instruction *instr);
 static void deleteNonCriticals(Instruction *instr);
 
 static void markCriticals(Instruction *instr) 
@@ -50,9 +51,49 @@ static void	criticalStore(Instruction *instr)
 		if (instr->opcode == STORE) {
 			if (instr->field1 == writeVar) {
 				instr->critical = 1; // found critical store instr
-				printf("critical store. \n");
+				criticalRegister(instr);
+				printf("critical store (%c). \n", instr->field1);
+				break;
 				/* find critical register for store! */
 			}
+		}
+		instr = instr->prev;
+	}
+}
+
+
+static void	criticalRegister(Instruction *instr, int reg)
+{
+	/* critical register (reg), mark most recent operation on reg as critical */
+	/* looking for a LOAD, LOADI, ADD, SUB, or MUL that has target register == reg */
+
+	/* begin traversing through instruction list to find critical operation */
+	instr = instr->prev; 
+	int stillLooking = 1;
+	while (instr & stillLooking) {
+		switch (instr->opcode) {
+		case LOAD:
+		case LOADI:
+			// LOAD and LOADI each generate only 1 new critical register
+			if (instr->field1 == reg) {
+				stillLooking = 0;
+				printf('critical load on reg (%i)',reg);
+				criticalRegister(instr, instr->field1);
+			}
+			break;
+		case ADD:
+		case SUB:
+		case MUL:
+			// ADD SUB and MUL each generate 2 new critical registers
+			if (instr->field1 == reg) {
+				stillLooking = 0;
+				printf('critical add/sub/mul on reg (%i)',reg);
+				criticalRegister(instr, instr->field2); // first operand's register is now critical
+				criticalRegister(instr, instr->field3); // second operand's register is now critical
+			}
+			break;
+		default:
+			// do nothing
 		}
 		instr = instr->prev;
 	}
@@ -68,7 +109,6 @@ int main()
 		exit(EXIT_FAILURE);
 	}
 
-	/* YOUR CODE GOES HERE */
 	markCriticals(head);
 	//deleteNonCriticals(head);
 
