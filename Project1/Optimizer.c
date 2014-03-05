@@ -14,11 +14,11 @@
 #include "Utils.h"
 
  /* Routines for dead code optimization */
-static void markCriticals(Instruction instr);
-static void	criticalStore(Instruction instr);
-static void deleteNonCriticals(Instruction instr);
+static void markCriticals(Instruction *instr);
+static void	criticalStore(Instruction *instr);
+static void deleteNonCriticals(Instruction *instr);
 
-static void markCriticals(Instruction instr) 
+static void markCriticals(Instruction *instr) 
 {
 	/* all read and write instructions are critical */
 	while(instr) {
@@ -32,14 +32,14 @@ static void markCriticals(Instruction instr)
 			printf("critical write. \n");
 			criticalStore(instr);
 			break;
-		default:
-			ERROR("Illegal instructions\n");
+		default: 
+			break;
 		}
 		instr = instr->next;
 	}
 }
 
-static void	criticalStore(Instruction instr)
+static void	criticalStore(Instruction *instr)
 {
 	/* WRITE was executed on "writeVar", need to find where "writeVar" was stored */
 	char writeVar = instr->field1;
