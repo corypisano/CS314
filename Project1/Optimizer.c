@@ -117,6 +117,28 @@ static void	criticalRegister(Instruction *instr, int reg)
 	}
 }
 
+static void deleteNonCriticals(Instruction *instr) 
+{
+	Instruction *curr;
+
+	if (!instr)
+		return;
+	while (instr) {
+		if (instr->critical == 1) {
+			// don't delete critical instructions
+			instr = instr->next;
+			continue;
+		} 
+		else {
+			// delete non critical instructions	
+			curr = instr;
+			instr = instr->next;
+			free(curr);
+		}
+	}
+
+}
+
 int main()
 {
 	Instruction *head;
@@ -128,7 +150,7 @@ int main()
 	}
 
 	markCriticals(head);
-	//deleteNonCriticals(head);
+	deleteNonCriticals(head);
 
 	if (head) {
 		PrintInstructionList(stdout, head);
