@@ -15,9 +15,9 @@
 
  /* Routines for dead code optimization */
 static void markCriticals(Instruction *instr);
-static void	criticalVariable(Instruction *instr);
+static void	criticalVariable(Instruction *instr, char variable);
 static void	criticalRegister(Instruction *instr, int reg);
-static void deleteNonCriticals(Instruction *instr);
+static void	deleteNonCriticals(Instruction *instr);
 
 static void markCriticals(Instruction *instr) 
 {
@@ -26,12 +26,10 @@ static void markCriticals(Instruction *instr)
 		switch (instr->opcode) {
 		case READ:
 			instr->critical = 1;
-			printf("critical read. \n");
 			break;
 		case WRITE:
 			instr->critical = 1;
-			printf("critical write. \n");
-			criticalVariable(instr);
+			criticalVariable(instr, instr->field1);
 			break;
 		default: 
 			break;
@@ -40,31 +38,27 @@ static void markCriticals(Instruction *instr)
 	}
 }
 
-static void	criticalVariable(Instruction *instr)
+static void	criticalVariable(Instruction *instr, char variable)
 {
-	/* WRITE was executed on "variable", need to find where variable was stored or loaded */
-	char variable = instr->field1;
-
 	/* begin traversing through instruction list to find critical STORE or LOAD instr */
 	instr = instr->prev;
 	while (instr) {
 		if (instr->opcode == STORE) {
 			if (instr->field1 == variable) {
 				instr->critical = 1; // found critical store instr
-				printf("critical store (%c). \n", instr->field1);
 				criticalRegister(instr, instr->field2);
 				break;
 				/* find critical register for store! */
 			}
 		}
+		/*
 		if (instr->opcode == LOAD) {
 			if (instr->field2 == variable) {
 				instr->critical = 1;
-				printf("critical LOAD (%c). \n",instr->field2);
-				criticalRegister(instr, instr->field1);
+				criticalVariable(instr, instr->field2);
 				break;
 			}	
-		}
+		}*/
 		instr = instr->prev;
 	}
 }
@@ -81,19 +75,18 @@ static void	criticalRegister(Instruction *instr, int reg)
 	while (instr && stillLooking) {
 		switch (instr->opcode) {
 		case LOAD:
-			// LOAD and LOADI each generate only 1 new critical register
 			if (instr->field1 == reg) {
 				stillLooking = 0;
-				printf("critical load on reg (%d)\n",reg);
-				criticalVariable(instr);
+				instr->critical = 1; 
+				criticalVariable(instr, instr->field2);
 			}
 			break;
 		case LOADI:
 			// LOAD and LOADI each generate only 1 new critical register
 			if (instr->field1 == reg) {
 				stillLooking = 0;
-				printf("critical load on reg (%d)\n",reg);
-				criticalRegister(instr, instr->field1);
+				instr->critical = 1; 
+				//criticalRegister(instr, instr->field1);
 			}
 			break;
 		case ADD:
@@ -102,7 +95,7 @@ static void	criticalRegister(Instruction *instr, int reg)
 			// ADD SUB and MUL each generate 2 new critical registers
 			if (instr->field1 == reg) {
 				stillLooking = 0;
-				printf("critical add/sub/mul on reg (%d)\n",reg);
+				instr->critical = 1; 
 				criticalRegister(instr, instr->field2); // first operand's register is now critical
 				criticalRegister(instr, instr->field3); // second operand's register is now critical
 			}
@@ -120,23 +113,25 @@ static void	criticalRegister(Instruction *instr, int reg)
 static void deleteNonCriticals(Instruction *instr) 
 {
 	Instruction *curr;
-
-	if (!instr)
-		return;
+	Instruction *prev;
 	while (instr) {
-		if (instr->critical == 1) {
+		if (instr->critical != 1) {
+			// delete non critical instructions	
+			curr = instr;
+			prev = curr->prev;
+
+			instr = instr->next;
+			instr->prev = curr->prev;
+			prev->next = instr;
+			free(curr);
+
+		} 
+		else {
 			// don't delete critical instructions
 			instr = instr->next;
 			continue;
-		} 
-		else {
-			// delete non critical instructions	
-			curr = instr;
-			instr = instr->next;
-			free(curr);
 		}
 	}
-
 }
 
 int main()
