@@ -40,7 +40,7 @@ static void markCriticals(Instruction *instr)
 
 static void	criticalVariable(Instruction *instr, char variable)
 {
-	/* begin traversing through instruction list to find critical STORE or LOAD instr */
+	/* begin traversing through instruction list to find critical STORE instr */
 	instr = instr->prev;
 	while (instr) {
 		if (instr->opcode == STORE) {
@@ -48,17 +48,8 @@ static void	criticalVariable(Instruction *instr, char variable)
 				instr->critical = 1; // found critical store instr
 				criticalRegister(instr, instr->field2);
 				break;
-				/* find critical register for store! */
 			}
 		}
-		/*
-		if (instr->opcode == LOAD) {
-			if (instr->field2 == variable) {
-				instr->critical = 1;
-				criticalVariable(instr, instr->field2);
-				break;
-			}	
-		}*/
 		instr = instr->prev;
 	}
 }
@@ -75,6 +66,7 @@ static void	criticalRegister(Instruction *instr, int reg)
 	while (instr && stillLooking) {
 		switch (instr->opcode) {
 		case LOAD:
+			// LOAD generates a critical variable
 			if (instr->field1 == reg) {
 				stillLooking = 0;
 				instr->critical = 1; 
@@ -82,11 +74,10 @@ static void	criticalRegister(Instruction *instr, int reg)
 			}
 			break;
 		case LOADI:
-			// LOAD and LOADI each generate only 1 new critical register
+			// LOADI does not rely on previous criticals
 			if (instr->field1 == reg) {
 				stillLooking = 0;
 				instr->critical = 1; 
-				//criticalRegister(instr, instr->field1);
 			}
 			break;
 		case ADD:
@@ -96,8 +87,8 @@ static void	criticalRegister(Instruction *instr, int reg)
 			if (instr->field1 == reg) {
 				stillLooking = 0;
 				instr->critical = 1; 
-				criticalRegister(instr, instr->field2); // first operand's register is now critical
-				criticalRegister(instr, instr->field3); // second operand's register is now critical
+				criticalRegister(instr, instr->field2); 
+				criticalRegister(instr, instr->field3);
 			}
 			break;
 		case READ:
@@ -116,10 +107,9 @@ static void deleteNonCriticals(Instruction *instr)
 	Instruction *prev;
 	while (instr) {
 		if (instr->critical != 1) {
-			// delete non critical instructions	
+			// delete non critical instructions, remove doubly linked node
 			curr = instr;
 			prev = curr->prev;
-
 			instr = instr->next;
 			instr->prev = curr->prev;
 			prev->next = instr;
@@ -127,7 +117,6 @@ static void deleteNonCriticals(Instruction *instr)
 
 		} 
 		else {
-			// don't delete critical instructions
 			instr = instr->next;
 			continue;
 		}

@@ -124,9 +124,6 @@ static int expr()
 		reg = next_register();
 		CodeGen(ADD, reg, left_reg, right_reg);
 		return reg;
-
-		/* YOUR CODE GOES HERE */
-		/* @ 2/27 - modified '+' case for '-' and '*' */
 	case '-':
 		next_token();
 		left_reg = expr();
@@ -152,7 +149,6 @@ static int expr()
 	case '8':
 	case '9':
 		return digit();
-		/* @ 2/27 - modified digit case for variable */
 	case 'a':
 	case 'b':
 	case 'c':
@@ -188,8 +184,6 @@ static void assign()
 
 static void read()
 {
-	/* YOUR CODE GOES HERE */
-	/* @ 2/27 - modified print() code */
 	if (token != '?') {
 		ERROR("Expected read statement\n");
 		exit(EXIT_FAILURE);
@@ -221,9 +215,6 @@ static void print()  /* variables are handled explicitly without recursive call 
 
 static void stmt()
 {
-	/* YOUR CODE GOES HERE */
-	/* @ 2/27 stmt() based off expr()*/
-	/* STMT ::= ASSIGN | READ | PRINT */
 	if (is_identifier(token)) { 	// ASSIGN begins with variable
 		assign();
 	} 
@@ -241,8 +232,6 @@ static void stmt()
 
 static void morestmts()
 {
-	/* YOUR CODE GOES HERE */
-	/* @ 2/27 morestms only if token is ';' otherwise epsilon */
 	if (token == ';') {
 		next_token();
 		stmtlist();
@@ -254,16 +243,12 @@ static void morestmts()
 
 static void stmtlist()
 {
-	/* YOUR CODE GOES HERE */
-	/* @ 2/27 guessing structure */
 	stmt();
 	morestmts();
 }
 
 static void program()
 {
-	/* YOUR CODE GOES HERE */
-	/* @ 2/27 program goes to stmtlist */
 	stmtlist();
 
 	if (token != '.') {
