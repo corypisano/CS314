@@ -17,13 +17,19 @@
 ;; the dictionary is needed for spell checking
 (load "test-dictionary.ss")
 
-;; (load "dictionary.ss") ;; the real thing with 45,000 words
-
+; (load "dictionary.ss") ;; the real thing with 45,000 words
 
 ;; -----------------------------------------------------
 ;; HELPER FUNCTIONS
 
 ;; *** CODE FOR ANY HELPER FUNCTION GOES HERE ***
+
+;; is "a" a member of the list "l"
+(define is-member?
+  (lambda (a l)
+    (cond ((null? l) #f)
+          ((equal? a (car l)) #t)
+          (else (is-member? a (cdr l))))))
 
 
 ;; -----------------------------------------------------
@@ -34,8 +40,7 @@
 ;;OUTPUT:true(#t) or false(#f)
 (define spell-checker 
   (lambda (w)
-   'SOME_CODE_GOES_HERE ;; *** FUNCTION BODY IS MISSING *** 
-   ))
+    (is-member? w dictionary)))
 
 ;; -----------------------------------------------------
 ;; ENCODING FUNCTIONS
@@ -46,17 +51,30 @@
 (define encode-n
   (lambda (n);;"n" is the distance, eg. n=3: a->d,b->e,...z->c
     (lambda (w);;"w" is the word to be encoded
-     'SOME_CODE_GOES_HERE ;; *** FUNCTION BODY IS MISSING ***
-      )))
+      (map vtc 
+           (map (lambda (x) (+ n x)) 
+                (map ctv 
+                     w))))))
 
 ;;encode a document
 ;;INPUT: a document "d" and a "encoder"
 ;;OUTPUT: an encoded document using a provided encoder
 (define encode-d;;this encoder is supposed to be the output of "encode-n"
   (lambda (d encoder)
-    'SOME_CODE_GOES_HERE ;; *** FUNCTION BODY IS MISSING ***
-    ))
-    
+    (cond ((null? d) '())
+          (else (append (list (map encoder (car d)))
+                        (list (map encoder (car (cdr d)))))))))
+         
+(define  e+1 (encode-n 1))
+(define  e-1 (encode-n -1))
+(define encoded (encode-d test-document e+1))
+(display "Encoded (+1) : ")
+(display encoded)
+(newline)
+(display "Decoded (-1) : ")
+(display (encode-d encoded e-1))
+(newline)
+
 ;; -----------------------------------------------------
 ;; DECODE FUNCTION GENERATORS
 ;; 2 generators should be implemented, and each of them returns a decoder
