@@ -31,6 +31,11 @@
           ((equal? a (car l)) #t)
           (else (is-member? a (cdr l))))))
 
+;; boolean: #t for '(w o r d), #f for '((w o r d))
+(define is-word?
+  (lambda (w)
+    (and (list? w) (not (list? (car w))))))
+
 
 ;; -----------------------------------------------------
 ;; SPELL CHECKER FUNCTION
@@ -49,10 +54,10 @@
 ;;INPUT:a number "n"
 ;;OUTPUT:a function, whose input=a word, output=encoded word
 (define encode-n
-  (lambda (n);;"n" is the distance, eg. n=3: a->d,b->e,...z->c
-    (lambda (w);;"w" is the word to be encoded
+  (lambda (n)  ;;"n" is the distance, eg. n=3: a->d,b->e,...z->c
+    (lambda (w)  ;;"w" is the word to be encoded
       (map vtc 
-           (map (lambda (x) (+ n x)) 
+           (map (lambda (x) (modulo (+ n x) 26)) ;; (x + n) % 26
                 (map ctv 
                      w))))))
 
@@ -62,9 +67,10 @@
 (define encode-d;;this encoder is supposed to be the output of "encode-n"
   (lambda (d encoder)
     (cond ((null? d) '())
-          (else (append (list (map encoder (car d)))
-                        (list (map encoder (car (cdr d)))))))))
-         
+          ((is-word? d) (encoder d))
+          (else (append (list (encode-d (car d) encoder)) 
+                        (encode-d (cdr d) encoder))))))
+                          
 (define  e+1 (encode-n 1))
 (define  e-1 (encode-n -1))
 (define encoded (encode-d test-document e+1))
@@ -110,8 +116,8 @@
 ;; -----------------------------------------------------
 ;; EXAMPLE APPLICATIONS OF FUNCTIONS
 ;;(spell-checker '(h e l l o))
-;;(define add5 (encode-n 5))
-;;(encode-d document add5)
+;(define add5 (encode-n 5))
+;(encode-d document add5)
 ;;(define decoderSP1 (Gen-Decoder-A paragraph))
 ;;(define decoderFA1 (Gen-Decoder-B paragraph))
 ;;(Code-Breaker document decoderSP1)
