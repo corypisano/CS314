@@ -15,8 +15,8 @@
 
 ;; contains a test-dictionary, which has a much smaller dictionary for testing
 ;; the dictionary is needed for spell checking
-(load "test-dictionary.ss")
-;(load "dictionary.ss") ;; the real thing with 45,000 words
+;(load "test-dictionary.ss")
+(load "dictionary.ss") ;; the real thing with 45,000 words
 
 ;; -----------------------------------------------------
 ;; HELPER FUNCTIONS
@@ -42,10 +42,16 @@
           ((spell-checker (car p)) (append (list 1) (spell-checker-p (cdr p))))
           (else (append (list 0) (spell-checker-p (cdr p)))))))
 
-;; reduces a boolean list to just the number of #t in the list
+;; returns number of correctly spelled words in a paragraph
 (define num-valid-words
   (lambda (p)
     (reduce + (spell-checker-p p) 0)))
+
+;; counts number of words in a paragraph
+(define num-words
+  (lambda (p)
+    (cond ((null? p) 0)
+          (else (+ 1 (num-words (cdr p)))))))
 
 ;; returns position of element in list (must be in list) 
 (define get-position
@@ -53,12 +59,25 @@
     (cond ((equal? a (car lst)) 0)
           (else (+ (get-position a (cdr lst)) 1)))))
 
-;; removes an item from a list
+;; 
+(define arg-max
+  (lambda (lst)
+    (get-position (apply max lst) lst)))
+
+;; removes an item from a list, only once
+; - don't need to use this?
 (define remove
   (lambda (a lst)
     (cond ((null? lst) '())
-          ((equal? a (car lst)) (remove a (cdr lst)))
+          ((equal? a (car lst)) (cdr lst))
           (else (cons (car lst) (remove a (cdr lst)))))))
+
+;; replaces a number in list with a 0
+(define replace-n-0
+  (lambda (n lst)
+    (cond ((null? lst) '())
+          ((equal? n (car lst)) (append (list 0) (cdr lst)))
+          (else (append (list (car lst)) (replace-n-0 n (cdr lst)))))))
 
 ;; flatten a list (from hw6)
 (define flatten 
@@ -139,6 +158,7 @@
 ;;generate a decoder using brute-force-version spell-checker
 ;;INPUT:an encoded paragraph "p"
 ;;OUTPUT:a decoder, whose input=a word, output=decoded word
+;; switch to arg-max
 (define Gen-Decoder-A
   (lambda (p)
     (define check-decode
@@ -162,15 +182,17 @@
 ;;OUTPUT:a decoder, whose input=a word, output=decoded word
 (define Gen-Decoder-B
   (lambda (p)
-    (vtc (get-position 
-          (apply max (letter-histogram p)) 
-          (letter-histogram p)))
-    ))
-
-; (vtc (get-position 
-;        (apply max (letter-histogram p)) 
-;        (letter-histogram p)))
-
+    (define check-decode?
+      (lambda (n)
+        (if (number? n) 
+            (equal? (num-words p) (num-valid-words (encode-p p (encode-n (- 0 n)))))
+            (display "shit"))))
+    (define decoder-iter
+      (lambda (freqs)
+        (cond ((equal? 0 (apply + freqs)) 0)
+              ((check-decode? (arg-max freqs)) (- 0 (arg-max freqs)))
+              (else (decoder-iter (replace-n-0 (apply max freqs) freqs))))))  
+    (encode-n (decoder-iter (letter-histogram p)))))
 
 ;; -----------------------------------------------------
 ;; CODE-BREAKER FUNCTION
@@ -185,8 +207,10 @@
 ;; -----------------------------------------------------
 ;; EXAMPLE APPLICATIONS OF FUNCTIONS
 ;;(spell-checker '(h e l l o))
-;(define add5 (encode-n 5))
-;(define encoded-document (encode-d document add5))
-;(define decoderSP1 (Gen-Decoder-A (car (cdr encoded-document))))
-;;(define decoderFA1 (Gen-Decoder-B paragraph))
-;(Code-Breaker encoded-document decoderSP1)
+(define add5 (encode-n 5))
+(define encoded-document (encode-d document add5))
+(define decoderSP1 (Gen-Decoder-A (car (cdr encoded-document))))
+(define encoded-p (car (cdr encoded-document)))
+(define decoderFA1 (Gen-Decoder-B encoded-p))
+(Code-Breaker encoded-document decoderFA1)
+
