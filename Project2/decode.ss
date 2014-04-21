@@ -184,14 +184,14 @@
   (lambda (p)
     (define check-decode?
       (lambda (n)
-        (if (number? n) 
-            (equal? (num-words p) (num-valid-words (encode-p p (encode-n (- 0 n)))))
-            (display "shit"))))
+        (if (number? n)
+            (equal? (num-words p) (num-valid-words (encode-p p (encode-n n))))
+            (display "error"))))
     (define decoder-iter
       (lambda (freqs)
         (cond ((equal? 0 (apply + freqs)) 0)
-              ((check-decode? (arg-max freqs)) (- 0 (arg-max freqs)))
-              (else (decoder-iter (replace-n-0 (apply max freqs) freqs))))))  
+              ((check-decode? (- 4 (arg-max freqs))) (- 4 (arg-max freqs)))
+              (else (display (arg-max freqs)) (decoder-iter (replace-n-0 (apply max freqs) freqs))))))  
     (encode-n (decoder-iter (letter-histogram p)))))
 
 ;; -----------------------------------------------------
@@ -209,8 +209,10 @@
 ;;(spell-checker '(h e l l o))
 (define add5 (encode-n 5))
 (define encoded-document (encode-d document add5))
-(define decoderSP1 (Gen-Decoder-A (car (cdr encoded-document))))
-(define encoded-p (car (cdr encoded-document)))
+;(define decoderSP1 (Gen-Decoder-A (car (cdr encoded-document))))
+(define encoded-p (car (cdr (cdr encoded-document))))
+(display "begin...")
+(newline)
 (define decoderFA1 (Gen-Decoder-B encoded-p))
 (Code-Breaker encoded-document decoderFA1)
 
