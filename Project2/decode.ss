@@ -8,15 +8,15 @@
 ;; -----------------------------------------------------
 ;; ENVIRONMENT
 ;; contains "ctv", "vtc",and "reduce" definitions
-(load "include.ss")
+;(load "include.ss")
 
 ;; contains a test document consisting of three paragraphs. 
-(load "document.ss")
+;(load "document.ss")
 
 ;; contains a test-dictionary, which has a much smaller dictionary for testing
 ;; the dictionary is needed for spell checking
 ;(load "test-dictionary.ss")
-(load "dictionary.ss") ;; the real thing with 45,000 words
+;(load "dictionary.ss") ;; the real thing with 45,000 words
 
 ;; -----------------------------------------------------
 ;; HELPER FUNCTIONS
@@ -28,14 +28,14 @@
           ((equal? a (car l)) #t)
           (else (is-member? a (cdr l))))))
 
-;; boolean: #t for '(w o r d), #f for '((w o r d))
+;; boolean: #t if w is a list of characters, but not a list of words
 (define is-word?
   (lambda (w)
     (and (list? w) (not (list? (car w))))))
 
 ;; apply spell-checker to a paragraph
 ;input  : paragraph
-;output : list of booleans for each word in paragraph if spelled correctly
+;output : list of 1's and 0's for each word in paragraph spelled correctly
 (define spell-checker-p
   (lambda (p)
     (cond ((null? p) '())
@@ -59,20 +59,13 @@
     (cond ((equal? a (car lst)) 0)
           (else (+ (get-position a (cdr lst)) 1)))))
 
-;; 
+;; returns the position in the list of the max element in the list
 (define arg-max
   (lambda (lst)
     (get-position (apply max lst) lst)))
 
-;; removes an item from a list, only once
-; - don't need to use this?
-(define remove
-  (lambda (a lst)
-    (cond ((null? lst) '())
-          ((equal? a (car lst)) (cdr lst))
-          (else (cons (car lst) (remove a (cdr lst)))))))
-
 ;; replaces a number in list with a 0
+; used for recursive calls in Gen-Decoder-B
 (define replace-n-0
   (lambda (n lst)
     (cond ((null? lst) '())
@@ -170,13 +163,6 @@
     )
   )
 
-;(define encoded (encode-d test-document (encode-n 11)))
-;(define decoderA (Gen-Decoder-A encoded))
-;(display "Encoded Document: " )
-;encoded
-;(display "Decoded Document: ")
-;(encode-d encoded decoderA)
-
 ;;generate a decoder using frequency analysis
 ;;INPUT:an encoded paragraph "p"
 ;;OUTPUT:a decoder, whose input=a word, output=decoded word
@@ -191,7 +177,7 @@
       (lambda (freqs)
         (cond ((equal? 0 (apply + freqs)) 0)
               ((check-decode? (- 4 (arg-max freqs))) (- 4 (arg-max freqs)))
-              (else (display (arg-max freqs)) (decoder-iter (replace-n-0 (apply max freqs) freqs))))))  
+              (else (decoder-iter (replace-n-0 (apply max freqs) freqs))))))  
     (encode-n (decoder-iter (letter-histogram p)))))
 
 ;; -----------------------------------------------------
@@ -207,12 +193,10 @@
 ;; -----------------------------------------------------
 ;; EXAMPLE APPLICATIONS OF FUNCTIONS
 ;;(spell-checker '(h e l l o))
-(define add5 (encode-n 5))
-(define encoded-document (encode-d document add5))
+;(define add5 (encode-n 5))
+;(define encoded-document (encode-d document add5))
 ;(define decoderSP1 (Gen-Decoder-A (car (cdr encoded-document))))
-(define encoded-p (car (cdr (cdr encoded-document))))
-(display "begin...")
-(newline)
-(define decoderFA1 (Gen-Decoder-B encoded-p))
-(Code-Breaker encoded-document decoderFA1)
+;(define encoded-p (car encoded-document))
+;(define decoderFA1 (Gen-Decoder-B encoded-p))
+;(Code-Breaker encoded-document decoderSP1)
 
