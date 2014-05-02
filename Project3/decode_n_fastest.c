@@ -58,12 +58,11 @@ int decode_n(char document[PARAS_PER_DOC][WORDS_PER_PARA][CHARS_PER_WORD]) {
   int i = 0, j = 0;
   
   int n_dash_hit_count[NUMBER_OF_CHARS];
-  #pragma omp parallel for      
   for(i = 0; i < NUMBER_OF_CHARS; ++i) {
     n_dash_hit_count[i] = 0;
   }
 
-  #pragma omp parallel for      
+  #pragma omp parallel for schedule(static) private(j)
   for (i = 0; i < PARAS_PER_DOC; i++) {
     for (j = 0; j < WORDS_PER_PARA; j++) {
       int n_dash = get_ndash(document[i][j]);
@@ -73,7 +72,7 @@ int decode_n(char document[PARAS_PER_DOC][WORDS_PER_PARA][CHARS_PER_WORD]) {
 
   // find n_dash that worked for most words
   int n_dash_max_hit_count = 0;
-  #pragma omp parallel for      
+  #pragma omp parallel for schedule(static)
   for(i = 1; i < NUMBER_OF_CHARS; ++i) {
     if(n_dash_hit_count[i] > n_dash_hit_count[n_dash_max_hit_count]) {
       n_dash_max_hit_count = i;
