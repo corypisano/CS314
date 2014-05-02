@@ -63,13 +63,9 @@ void encode_decode(char *file_name, int n, int decode_choice) {
   fclose(file);
 
   // encode
-
-#pragma omp parallel for  
-for (i = 0; i < WORDS_PER_PARA; i++) {
-#pragma omp parallel for    
-for (j = 0; j < PARAS_PER_DOC; j++) {
-#pragma omp parallel for      
-for (k = 0; k < strlen (document[j][i]); k++) {
+  for (i = 0; i < WORDS_PER_PARA; i++) {
+    for (j = 0; j < PARAS_PER_DOC; j++) {
+      for (k = 0; k < strlen (document[j][i]); k++) {
 	document[j][i][k] = encrypt(document[j][i][k], n);
       }
     }
@@ -83,12 +79,9 @@ for (k = 0; k < strlen (document[j][i]); k++) {
     // decode frequency analysis
     n_dash = decode_f(document);
   }
-
-#pragma omp parallel for  
   for (i = 0; i < WORDS_PER_PARA; i++) {
-#pragma omp parallel for  
+  #pragma omp parallel for
     for (j = 0; j < PARAS_PER_DOC; j++) {
-#pragma omp parallel for  
       for (k = 0; k < strlen (document[j][i]); k++) {
 	document[j][i][k] = encrypt(document[j][i][k], n_dash);
       }
