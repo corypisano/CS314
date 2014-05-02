@@ -62,7 +62,7 @@ int decode_n(char document[PARAS_PER_DOC][WORDS_PER_PARA][CHARS_PER_WORD]) {
     n_dash_hit_count[i] = 0;
   }
 
-  #pragma omp parallel for  
+  #pragma omp parallel for schedule (static) private(j)
   for (i = 0; i < PARAS_PER_DOC; i++) {
     for (j = 0; j < WORDS_PER_PARA; j++) {
       int n_dash = get_ndash(document[i][j]);
