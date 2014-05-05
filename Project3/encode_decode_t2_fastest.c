@@ -81,7 +81,7 @@ void encode_decode(char *file_name, int n, int decode_choice) {
     n_dash = decode_f(document);
   }
 
-  #pragma omp parallel for schedule(static,16) private(j,k)
+  #pragma omp parallel for schedule(static) private(j,k)
   for (i = 0; i < WORDS_PER_PARA; i++) {
     for (j = 0; j < PARAS_PER_DOC; j++) {
       for (k = 0; k < strlen (document[j][i]); k++) {
